@@ -1,0 +1,25 @@
+# Environment variables
+.env
+.env.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test and temporary files
+test_results.txt
+*.sql
+*.log
+*.tmp
+
+# Docker volumes
+postgres_data/
+chroma_data/
+ollama_data/

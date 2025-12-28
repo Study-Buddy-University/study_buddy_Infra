@@ -1,0 +1,129 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: studybuddy_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-studybuddy}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ChromaDB Vector Store
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: studybuddy_chromadb
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    ports:
+      - "8000:8000"
+
+  # Ollama LLM Service
+  # GPU type controlled by GPU_TYPE env var (set by detect-gpu.sh script)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: studybuddy_ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    # NVIDIA GPU support (active when GPU_TYPE=nvidia)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: ${GPU_TYPE:-nvidia}
+              count: ${GPU_COUNT:-all}
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Backend API
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: studybuddy_backend
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-studybuddy}
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: 8000
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama2}
+    volumes:
+      - ../backend:/app
+      - backend_uploads:/app/uploads
+    ports:
+      - "8001:8001"
+    depends_on:
+      - postgres
+      - chromadb
+      - ollama
+    # GPU access for nvidia-smi detection
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: ${GPU_TYPE:-nvidia}
+              count: ${GPU_COUNT:-all}
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ""
+    container_name: studybuddy_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # SearXNG - Self-hosted metasearch engine
+  searxng:
+    image: searxng/searxng:latest
+    container_name: studybuddy_searxng
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./searxng:/etc/searxng
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080/
+      - BIND_ADDRESS=0.0.0.0:8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  chroma_data:
+  ollama_data:
+  backend_uploads:
