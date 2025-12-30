@@ -7,7 +7,7 @@ Write-Host "================================================" -ForegroundColor C
 Write-Host ""
 
 # Check if Docker containers are running
-$ollamaRunning = docker compose ps | Select-String "ollama" | Select-String "running"
+$ollamaRunning = docker compose ps | Select-String "ollama" | Select-String "Up"
 if (-not $ollamaRunning) {
     Write-Host "[ERROR] Ollama container is not running!" -ForegroundColor Red
     Write-Host "Please start the application first:" -ForegroundColor Yellow
