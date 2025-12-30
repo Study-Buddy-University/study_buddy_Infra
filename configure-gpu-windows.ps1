@@ -142,8 +142,8 @@ if ($nvidiaGPU.Found) {
             Write-Host "  1. Ensure Docker Desktop is running" -ForegroundColor White
             Write-Host "  2. Ensure NVIDIA Container Toolkit is installed in WSL" -ForegroundColor White
             Write-Host "     (See WINDOWS_SETUP_GUIDE.md for instructions)" -ForegroundColor White
-            Write-Host "  3. Start the application:" -ForegroundColor White
-            Write-Host "     docker compose up -d" -ForegroundColor Cyan
+            Write-Host "  3. Start the application with NVIDIA GPU override:" -ForegroundColor White
+            Write-Host "     docker compose -f docker-compose.yml -f docker-compose.nvidia.yml up -d" -ForegroundColor Cyan
             Write-Host ""
             Write-Host "[GPU] GPU acceleration will be enabled for AI inference!" -ForegroundColor Green
         }

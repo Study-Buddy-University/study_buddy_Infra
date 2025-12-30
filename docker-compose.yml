@@ -44,20 +44,10 @@ services:
     environment:
       - OLLAMA_DEBUG=${OLLAMA_DEBUG:-0}
       - ROCR_VISIBLE_DEVICES=${ROCR_VISIBLE_DEVICES:-0}
-    # NVIDIA GPU support (when GPU_TYPE=nvidia)
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: ${GPU_TYPE:-nvidia}
-              count: ${GPU_COUNT:-all}
-              capabilities: [gpu]
-    # AMD GPU support (when GPU_TYPE=amd, requires Docker on Linux/WSL2)
-    # Uncomment these lines if using AMD GPU:
-    # privileged: true
-    # devices:
-    #   - /dev/kfd
-    #   - /dev/dri
+    # GPU configuration is handled by override files:
+    # - For NVIDIA: use docker-compose.nvidia.yml
+    # - For AMD: use docker-compose.amd.yml
+    # - For CPU: use base docker-compose.yml only
     healthcheck:
       test: ["CMD-SHELL", "ollama list || exit 1"]
       interval: 30s
