@@ -76,14 +76,6 @@ services:
       - postgres
       - chromadb
       - ollama
-    # GPU access for nvidia-smi detection
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: ${GPU_TYPE:-nvidia}
-              count: ${GPU_COUNT:-all}
-              capabilities: [gpu]
     restart: unless-stopped
 
   # Frontend

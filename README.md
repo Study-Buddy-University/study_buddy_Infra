@@ -209,36 +209,88 @@ docker compose exec ollama ollama list
 docker compose exec ollama ollama rm model-name
 ```
 
-### GPU not detected
+### GPU Configuration
+
+**Multi-GPU Support with Override Files:**
+
+The application supports NVIDIA, AMD, and CPU-only modes via Docker Compose override files:
+
 ```bash
-# For NVIDIA GPUs on Linux/WSL 2
-# Install NVIDIA Container Toolkit
-# See: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
+# NVIDIA GPU
+docker compose -f docker-compose.yml -f docker-compose.nvidia.yml up -d
 
-# Verify GPU is accessible
-docker run --rm --gpus all nvidia/cuda:11.8.0-base-ubuntu22.04 nvidia-smi
+# AMD GPU (experimental on Windows)
+docker compose -f docker-compose.yml -f docker-compose.amd.yml up -d
 
-# For Windows 11 + WSL 2, see docs/WINDOWS_SETUP_GUIDE.md
+# CPU only (default)
+docker compose up -d
 ```
+
+**Configuration Files:**
+- `docker-compose.yml` - Base configuration (CPU mode)
+- `docker-compose.nvidia.yml` - NVIDIA GPU override
+- `docker-compose.amd.yml` - AMD GPU override
+
+**Automated Setup:**
+Use GPU configuration scripts (see Scripts section above) for automatic detection and setup.
+
+**Detailed Documentation:**
+- See `docs/GPU_DOCKER_CONFIGURATION.md` for complete guide
+- See `docs/AMD_GPU_DOCKER_SETUP.md` for AMD-specific setup
+- See `docs/WINDOWS_SETUP_GUIDE.md` for Windows 11 setup
 
 ## 🚀 Scripts & Automation
 
-### Setup Scripts
-- `configure-gpu-windows.ps1` - Windows GPU auto-configuration
-- `detect-gpu.sh` - Linux/Mac GPU detection
+### GPU Configuration Scripts
 
-### Usage
+**Automatically detect and configure GPU:**
 
-**Windows (PowerShell):**
+- `configure-gpu-windows.ps1` - Windows PowerShell GPU configuration
+- `configure-gpu-linux.sh` - Linux/Ubuntu bash GPU configuration
+
+**Features:**
+- Detects NVIDIA, AMD, or no GPU
+- Configures `.env` file automatically
+- Provides correct Docker Compose commands
+- Safe fallback to CPU mode
+
+**Usage:**
+
 ```powershell
-# Auto-configure GPU settings
-powershell -ExecutionPolicy Bypass -File .\configure-gpu-windows.ps1
+# Windows (PowerShell)
+.\configure-gpu-windows.ps1
 ```
 
-**Linux/Mac:**
 ```bash
-# Detect GPU and configure
-./detect-gpu.sh
+# Linux (bash)
+chmod +x configure-gpu-linux.sh
+./configure-gpu-linux.sh
+```
+
+### Model Download Scripts
+
+**Bulk download AI models:**
+
+- `download-models.ps1` - Windows PowerShell model downloader
+- `download-models.sh` - Linux/Ubuntu bash model downloader
+
+**Features:**
+- Interactive menu (Fast, Full, All, Custom)
+- Progress tracking per model
+- Size estimates for each model
+- Verifies Ollama container is running
+
+**Usage:**
+
+```powershell
+# Windows (PowerShell)
+.\download-models.ps1
+```
+
+```bash
+# Linux (bash)
+chmod +x download-models.sh
+./download-models.sh
 ```
 
 ## 📚 Documentation
