@@ -30,15 +30,21 @@ services:
       - "8000:8000"
 
   # Ollama LLM Service
-  # GPU type controlled by GPU_TYPE env var (set by detect-gpu.sh script)
+  # GPU type controlled by GPU_TYPE env var
+  # For NVIDIA: GPU_TYPE=nvidia, uses ollama/ollama:latest
+  # For AMD: GPU_TYPE=amd, uses ollama/ollama:rocm
+  # For CPU: GPU_TYPE=none, uses ollama/ollama:latest
   ollama:
-    image: ollama/ollama:latest
+    image: ${OLLAMA_IMAGE:-ollama/ollama:latest}
     container_name: studybuddy_ollama
     volumes:
       - ollama_data:/root/.ollama
     ports:
       - "11434:11434"
-    # NVIDIA GPU support (active when GPU_TYPE=nvidia)
+    environment:
+      - OLLAMA_DEBUG=${OLLAMA_DEBUG:-0}
+      - ROCR_VISIBLE_DEVICES=${ROCR_VISIBLE_DEVICES:-0}
+    # NVIDIA GPU support (when GPU_TYPE=nvidia)
     deploy:
       resources:
         reservations:
@@ -46,6 +52,12 @@ services:
             - driver: ${GPU_TYPE:-nvidia}
               count: ${GPU_COUNT:-all}
               capabilities: [gpu]
+    # AMD GPU support (when GPU_TYPE=amd, requires Docker on Linux/WSL2)
+    # Uncomment these lines if using AMD GPU:
+    # privileged: true
+    # devices:
+    #   - /dev/kfd
+    #   - /dev/dri
     healthcheck:
       test: ["CMD-SHELL", "ollama list || exit 1"]
       interval: 30s

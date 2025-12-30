@@ -92,6 +92,19 @@ function Update-EnvFile {
         $envContent += "`nGPU_COUNT=$GpuCount"
     }
     
+    # Set OLLAMA_IMAGE based on GPU type
+    $ollamaImage = "ollama/ollama:latest"
+    if ($GpuType -eq "amd") {
+        $ollamaImage = "ollama/ollama:rocm"
+    }
+    
+    if ($envContent -match "OLLAMA_IMAGE=.*") {
+        $envContent = $envContent -replace "OLLAMA_IMAGE=.*", "OLLAMA_IMAGE=$ollamaImage"
+    }
+    else {
+        $envContent += "`nOLLAMA_IMAGE=$ollamaImage"
+    }
+    
     # Write back to .env
     Set-Content -Path $envPath -Value $envContent
     
@@ -99,6 +112,7 @@ function Update-EnvFile {
     Write-Host "✅ Configuration saved to .env file" -ForegroundColor Green
     Write-Host "   GPU_TYPE=$GpuType" -ForegroundColor Green
     Write-Host "   GPU_COUNT=$GpuCount" -ForegroundColor Green
+    Write-Host "   OLLAMA_IMAGE=$ollamaImage" -ForegroundColor Green
     
     return $true
 }
@@ -147,19 +161,54 @@ if ($amdGPU.Found) {
     Write-Host "⚠️  AMD GPU Detected!" -ForegroundColor Yellow
     Write-Host "   Model: $($amdGPU.Info)" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "Note: AMD GPU support requires ROCm, which has limited Windows support." -ForegroundColor Yellow
-    Write-Host "For best results, consider using NVIDIA GPUs or CPU mode." -ForegroundColor Yellow
+    Write-Host "================================================" -ForegroundColor Yellow
+    Write-Host "  AMD GPU Docker Configuration (Experimental)" -ForegroundColor Yellow
+    Write-Host "================================================" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "AMD GPU support in Docker on Windows requires:" -ForegroundColor White
+    Write-Host "  • WSL2 with Ubuntu" -ForegroundColor White
+    Write-Host "  • Docker Desktop with WSL2 backend" -ForegroundColor White
+    Write-Host "  • AMD Radeon drivers installed" -ForegroundColor White
+    Write-Host "  • ROCm Docker image (ollama/ollama:rocm)" -ForegroundColor White
+    Write-Host ""
+    Write-Host "⚠️  WARNING: This is experimental and may not work!" -ForegroundColor Yellow
+    Write-Host "   CPU mode is recommended for reliability." -ForegroundColor Yellow
     Write-Host ""
     
-    $response = Read-Host "Configure for AMD GPU anyway? (y/N)"
+    $response = Read-Host "Configure for AMD GPU Docker (experimental)? (y/N)"
     if ($response -eq "y" -or $response -eq "Y") {
-        Update-EnvFile -GpuType "amd" -GpuCount 1
-        Write-Host ""
-        Write-Host "AMD GPU configured. Note that this is experimental on Windows." -ForegroundColor Yellow
+        $success = Update-EnvFile -GpuType "amd" -GpuCount 1
+        
+        if ($success) {
+            Write-Host ""
+            Write-Host "================================================" -ForegroundColor Green
+            Write-Host "  AMD GPU Docker Configuration Complete!" -ForegroundColor Green
+            Write-Host "================================================" -ForegroundColor Green
+            Write-Host ""
+            Write-Host "Next steps:" -ForegroundColor Yellow
+            Write-Host "  1. Start Docker with AMD GPU override:" -ForegroundColor White
+            Write-Host "     docker compose -f docker-compose.yml -f docker-compose.amd.yml up -d" -ForegroundColor Cyan
+            Write-Host ""
+            Write-Host "  Alternative (if above doesn't work):" -ForegroundColor Yellow
+            Write-Host "  1. Edit docker-compose.yml" -ForegroundColor White
+            Write-Host "  2. Uncomment the AMD GPU device lines (search for 'AMD GPU support')" -ForegroundColor White
+            Write-Host "  3. Run: docker compose up -d" -ForegroundColor Cyan
+            Write-Host ""
+            Write-Host "⚠️  If Ollama doesn't detect GPU:" -ForegroundColor Yellow
+            Write-Host "  • Check: docker compose exec ollama rocm-smi" -ForegroundColor White
+            Write-Host "  • Check: docker compose logs ollama" -ForegroundColor White
+            Write-Host "  • Fallback to CPU mode (restart with GPU_TYPE=none)" -ForegroundColor White
+            Write-Host ""
+            Write-Host "Note: GPU detection issues are common with AMD on Windows/Docker" -ForegroundColor Yellow
+        }
     }
     else {
-        Write-Host "Using CPU mode instead." -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "Using CPU mode instead (recommended)." -ForegroundColor Yellow
         Update-EnvFile -GpuType "none" -GpuCount 0
+        Write-Host ""
+        Write-Host "CPU mode configured. Start application with:" -ForegroundColor Green
+        Write-Host "  docker compose up -d" -ForegroundColor Cyan
     }
     exit 0
 }

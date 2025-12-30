@@ -1,0 +1,19 @@
+# Docker Compose Override for AMD GPU Support
+# Use with: docker compose -f docker-compose.yml -f docker-compose.amd.yml up -d
+
+services:
+  # Ollama with AMD ROCm Support
+  ollama:
+    image: ollama/ollama:rocm
+    privileged: true  # Required for AMD GPU access on Windows/WSL2
+    devices:
+      - /dev/kfd      # AMD GPU kernel driver
+      - /dev/dri      # Direct Rendering Infrastructure
+    environment:
+      - OLLAMA_DEBUG=1
+      - ROCR_VISIBLE_DEVICES=0  # GPU selection (0 = first GPU)
+
+  # Backend with AMD GPU awareness
+  backend:
+    environment:
+      - GPU_TYPE=amd
