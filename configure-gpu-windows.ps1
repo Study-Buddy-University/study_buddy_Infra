@@ -214,7 +214,7 @@ if ($amdGPU.Found) {
 }
 
 # No GPU detected
-Write-Host "ℹ️  No GPU detected" -ForegroundColor Yellow
+Write-Host "[INFO] No GPU detected" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "The application will run in CPU-only mode." -ForegroundColor White
 Write-Host "This is still functional but will be slower for AI inference." -ForegroundColor White
