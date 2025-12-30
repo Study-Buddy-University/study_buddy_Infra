@@ -109,7 +109,7 @@ function Update-EnvFile {
     Set-Content -Path $envPath -Value $envContent
     
     Write-Host ""
-    Write-Host "✅ Configuration saved to .env file" -ForegroundColor Green
+    Write-Host "[SUCCESS] Configuration saved to .env file" -ForegroundColor Green
     Write-Host "   GPU_TYPE=$GpuType" -ForegroundColor Green
     Write-Host "   GPU_COUNT=$GpuCount" -ForegroundColor Green
     Write-Host "   OLLAMA_IMAGE=$ollamaImage" -ForegroundColor Green
@@ -118,13 +118,13 @@ function Update-EnvFile {
 }
 
 # Main script execution
-Write-Host "🔍 Detecting GPU hardware..." -ForegroundColor Yellow
+Write-Host "[DETECTING] Checking for GPU hardware..." -ForegroundColor Yellow
 Write-Host ""
 
 # Detect NVIDIA GPU
 $nvidiaGPU = Get-NvidiaGPU
 if ($nvidiaGPU.Found) {
-    Write-Host "✅ NVIDIA GPU Detected!" -ForegroundColor Green
+    Write-Host "[SUCCESS] NVIDIA GPU Detected!" -ForegroundColor Green
     Write-Host "   Model: $($nvidiaGPU.Info)" -ForegroundColor Cyan
     Write-Host ""
     
@@ -145,7 +145,7 @@ if ($nvidiaGPU.Found) {
             Write-Host "  3. Start the application:" -ForegroundColor White
             Write-Host "     docker compose up -d" -ForegroundColor Cyan
             Write-Host ""
-            Write-Host "⚡ GPU acceleration will be enabled for AI inference!" -ForegroundColor Green
+            Write-Host "[GPU] GPU acceleration will be enabled for AI inference!" -ForegroundColor Green
         }
     }
     else {
@@ -158,7 +158,7 @@ if ($nvidiaGPU.Found) {
 # Detect AMD GPU
 $amdGPU = Get-AmdGPU
 if ($amdGPU.Found) {
-    Write-Host "⚠️  AMD GPU Detected!" -ForegroundColor Yellow
+    Write-Host "[WARNING] AMD GPU Detected!" -ForegroundColor Yellow
     Write-Host "   Model: $($amdGPU.Info)" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "================================================" -ForegroundColor Yellow
@@ -166,12 +166,12 @@ if ($amdGPU.Found) {
     Write-Host "================================================" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "AMD GPU support in Docker on Windows requires:" -ForegroundColor White
-    Write-Host "  • WSL2 with Ubuntu" -ForegroundColor White
-    Write-Host "  • Docker Desktop with WSL2 backend" -ForegroundColor White
-    Write-Host "  • AMD Radeon drivers installed" -ForegroundColor White
-    Write-Host "  • ROCm Docker image (ollama/ollama:rocm)" -ForegroundColor White
+    Write-Host "  - WSL2 with Ubuntu" -ForegroundColor White
+    Write-Host "  - Docker Desktop with WSL2 backend" -ForegroundColor White
+    Write-Host "  - AMD Radeon drivers installed" -ForegroundColor White
+    Write-Host "  - ROCm Docker image (ollama/ollama:rocm)" -ForegroundColor White
     Write-Host ""
-    Write-Host "⚠️  WARNING: This is experimental and may not work!" -ForegroundColor Yellow
+    Write-Host "[WARNING] This is experimental and may not work!" -ForegroundColor Yellow
     Write-Host "   CPU mode is recommended for reliability." -ForegroundColor Yellow
     Write-Host ""
     
@@ -194,10 +194,10 @@ if ($amdGPU.Found) {
             Write-Host "  2. Uncomment the AMD GPU device lines (search for 'AMD GPU support')" -ForegroundColor White
             Write-Host "  3. Run: docker compose up -d" -ForegroundColor Cyan
             Write-Host ""
-            Write-Host "⚠️  If Ollama doesn't detect GPU:" -ForegroundColor Yellow
-            Write-Host "  • Check: docker compose exec ollama rocm-smi" -ForegroundColor White
-            Write-Host "  • Check: docker compose logs ollama" -ForegroundColor White
-            Write-Host "  • Fallback to CPU mode (restart with GPU_TYPE=none)" -ForegroundColor White
+            Write-Host "[WARNING] If Ollama doesn't detect GPU:" -ForegroundColor Yellow
+            Write-Host "  - Check: docker compose exec ollama rocm-smi" -ForegroundColor White
+            Write-Host "  - Check: docker compose logs ollama" -ForegroundColor White
+            Write-Host "  - Fallback to CPU mode (restart with GPU_TYPE=none)" -ForegroundColor White
             Write-Host ""
             Write-Host "Note: GPU detection issues are common with AMD on Windows/Docker" -ForegroundColor Yellow
         }
@@ -220,8 +220,8 @@ Write-Host "The application will run in CPU-only mode." -ForegroundColor White
 Write-Host "This is still functional but will be slower for AI inference." -ForegroundColor White
 Write-Host ""
 Write-Host "Recommendations:" -ForegroundColor Yellow
-Write-Host "  • Use smaller models (qwen2.5:0.5b, gemma2:2b)" -ForegroundColor White
-Write-Host "  • Consider upgrading to a system with NVIDIA GPU" -ForegroundColor White
+Write-Host "  - Use smaller models (qwen2.5:0.5b, gemma2:2b)" -ForegroundColor White
+Write-Host "  - Consider upgrading to a system with NVIDIA GPU" -ForegroundColor White
 Write-Host ""
 
 $response = Read-Host "Continue with CPU-only mode? (Y/n)"
@@ -238,7 +238,7 @@ if ($response -eq "" -or $response -eq "y" -or $response -eq "Y") {
         Write-Host "  1. Start the application:" -ForegroundColor White
         Write-Host "     docker compose up -d" -ForegroundColor Cyan
         Write-Host ""
-        Write-Host "💻 Application will run in CPU mode" -ForegroundColor Cyan
+        Write-Host "[CPU] Application will run in CPU mode" -ForegroundColor Cyan
     }
 }
 else {
@@ -248,6 +248,6 @@ else {
 
 Write-Host ""
 Write-Host "For more information, see:" -ForegroundColor Cyan
-Write-Host "  • WINDOWS_SETUP_GUIDE.md" -ForegroundColor White
-Write-Host "  • GPU_SETUP.md" -ForegroundColor White
+Write-Host "  - WINDOWS_SETUP_GUIDE.md" -ForegroundColor White
+Write-Host "  - GPU_SETUP.md" -ForegroundColor White
 Write-Host ""
